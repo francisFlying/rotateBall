@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>$Title$</title>
+</head>
+<body>
+<canvas id="canvas" width="800" height="600" style="border:1px solid red"></canvas>
+</body>
+<script src="jquery-2.1.4.js"></script>
+<script>
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+
+    function Chain(opt) {
+        if (!opt) throw new Error("请设置相关参数");
+
+
+        if(!opt.ctx) throw new Error("请传递上下文");
+        if(!opt.bigX) throw new Error("请传递大圆圆心x");
+        if(!opt.bigY) throw new Error("请传递大圆圆心y");
+
+        var _defaultOpt={
+            num: data.length,
+            start: 0,
+            bigRadius:150,
+            smallRadius:10
+        };
+
+        $.extend(this,_defaultOpt,opt);
+
+
+        this.init();
+    }
+    Chain.prototype = {
+        constructor: Chain,
+        init: function () {
+            //让动画以较快的方式运行
+            this.run(10);
+
+            this.bindEvents();
+
+        },
+
+        run:function(speed){
+            var self=this;
+            clearInterval(this.timer);
+            this.timer=setInterval(function(){
+                var ctx=self.ctx;
+
+                ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+                
+                //1、绘制大圆
+                self.drawBigCircle();
+
+                //2、绘制小圆
+                self.drawSmallCircles();
+
+                //3、进行动画的增量:start
+                self.start+=0.01*Math.PI;
+            },speed);
+        },
+
+        bindEvents:function(){
+            var canvas=this.ctx.canvas;
+
+            var self=this;
+
+            $(canvas).on("mouseenter",function(){
+                self.run(50);
+            }).on("mouseleave",function(){
+                self.run(10);
+            });
+        },
+
+        drawBigCircle: function () {
+            var ctx = this.ctx;
+            ctx.beginPath();
+            ctx.arc(this.bigX, this.bigY, this.bigRadius, 0, 2 * Math.PI);
+            ctx.stroke();
+        },
+
+        drawSmallCircles: function () {
+            this.ctx.fillStyle="pink";
+
+            var radian = 2 * Math.PI / this.num;//相邻小圆的圆心之间的弧度差
+
+            for (var i = 0; i < this.num; i++) {
+                var smallRadian = this.start + radian * i;//该小圆的圆心位于大圆的弧度值
+
+                this.drawSmallCircle(smallRadian);
+
+
+
+            }
+        },
+
+
+        drawSmallCircle: function (smallRadian) {
+            var b = this.bigRadius * Math.cos(smallRadian);
+            var h = this.bigRadius * Math.sin(smallRadian);
+            //计算小圆的圆心的坐标
+            var sX = this.bigX + b;
+            var sY = this.bigY + h;
+
+            var ctx = this.ctx;
+
+            ctx.beginPath();
+            ctx.arc(sX, sY, this.smallRadius, 0, 2 * Math.PI);
+           /* for(var i=0;i<data.length;i++){
+                ctx.fillText(data[i],sX,sY);
+            }*/
+            ctx.fill();
+
+        }
+
+    };
+
+    var opt = {
+        ctx: ctx,
+        bigX: 300,
+        bigY: 300,
+        bigRadius: 150,
+        num: 5,
+        smallRadius: 50,
+        start: 0
+    }
+
+
+    var data=["js","ios","php","java","前端"];
+
+
+    new Chain(opt);
+
+
+</script>
+</html>
